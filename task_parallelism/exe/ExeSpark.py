@@ -27,7 +27,7 @@ class ExeSparc(Executor):
         self,
         _csv_row
     ):
-        dfs = self.dfsFactory.create()
+        dfs = self.dfs_factory.create()
 
         ####
         # Get parameters
@@ -178,7 +178,7 @@ class ExeSparc(Executor):
 
     def runAllTasks(
         self,
-        _dfsFactory,
+        _dfs_factory,
         _experiment_name,
         _tasks_csv_path,
         _base_dfs_path,
@@ -186,7 +186,8 @@ class ExeSparc(Executor):
         _input_dfs_path,
         _output_dfs_path
     ):
-        self.dfsFactory = _dfsFactory
+        self.dfs_factory = _dfs_factory
+        self.base_dfs_path = _base_dfs_path
         self.binaries_dfs_path = _binaries_dfs_path
         self.input_dfs_path = _input_dfs_path
         self.output_dfs_path = _output_dfs_path
@@ -195,7 +196,7 @@ class ExeSparc(Executor):
         # Upload CSV data to distributed file system
         tasks_csv_dfs_path = os.path.join(
             _base_dfs_path, os.path.basename(_tasks_csv_path))
-        dfs = _dfsFactory.create()
+        dfs = _dfs_factory.create()
         dfs.uploadDataToDFS(_tasks_csv_path, tasks_csv_dfs_path)
 
         ####

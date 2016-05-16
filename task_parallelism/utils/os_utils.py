@@ -14,6 +14,17 @@ def getCleanPathName(
     return re.sub("[^0-9a-zA-Z]+", "_", _path)
 
 
+def getInstance(
+    _module_class_name
+):
+    module_name, class_name = _module_class_name.rsplit(".", 1)
+    my_module = __import__(module_name, fromlist=[class_name])
+    my_class = getattr(my_module, class_name)
+    instance = my_class()
+
+    return instance
+
+
 def runCommand(
     _command,
     _work_dir=None,

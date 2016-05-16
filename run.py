@@ -3,18 +3,8 @@
 #
 
 import argparse
+from task_parallelism.utils.os_utils import getInstance
 from task_parallelism.WorkflowManager import WorkflowManager
-
-
-def getInstance(
-    _module_class_name
-):
-    module_name, class_name = _module_class_name.rsplit(".", 1)
-    my_module = __import__(module_name, fromlist=[class_name])
-    my_class = getattr(my_module, class_name)
-    instance = my_class()
-
-    return instance
 
 if __name__ == "__main__":
 
@@ -57,6 +47,6 @@ if __name__ == "__main__":
         _binaries_path=args.binaries_path,
         _input_path=args.input_path,
         _output_path=args.output_path,
-        _dfsFactory=getInstance(args.dfs_factory_name),
-        _exeFactory=getInstance(args.exe_factory_name)
+        _dfs_factory=getInstance(args.dfs_factory_name),
+        _exe_factory=getInstance(args.exe_factory_name)
     )

@@ -16,8 +16,8 @@ class WorkflowManager:
         _binaries_path,
         _input_path,
         _output_path,
-        _dfsFactory,
-        _exeFactory
+        _dfs_factory,
+        _exe_factory
     ):
         ####
         # Test arguments
@@ -41,7 +41,7 @@ class WorkflowManager:
                 "'output_path': '%s' must not exist."
                 % _output_path)
 
-        dfs = _dfsFactory.create()
+        dfs = _dfs_factory.create()
 
         base_dfs_path = os.path.join(
             dfs.getBasePath(), getCleanPathName(_experiment_name))
@@ -62,12 +62,12 @@ class WorkflowManager:
         dfs.uploadDataToDFS(_binaries_path, binaries_dfs_path)
         dfs.uploadDataToDFS(_input_path, input_dfs_path)
 
-        exe = _exeFactory.create()
+        exe = _exe_factory.create()
 
         ####
         # Run all tasks parallel
         exe.runAllTasks(
-            _dfsFactory=_dfsFactory,
+            _dfs_factory=_dfs_factory,
             _experiment_name=_experiment_name,
             _tasks_csv_path=_tasks_csv_path,
             _base_dfs_path=base_dfs_path,

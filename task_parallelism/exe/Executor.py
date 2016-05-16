@@ -15,7 +15,7 @@ class Executor:
 
     def runAllTasks(
         self,
-        _dfsFactory,
+        _dfs_factory,
         _experiment_name,
         _tasks_csv_path,
         _base_dfs_path,
