@@ -15,10 +15,21 @@ class DistributedFileSistemFactory:
 
 class DistributedFileSistem:
 
-    def cleanupDFS(
+    def downloadDataFromDFS(
+        self,
+        _dfs_path,
+        _local_path,
+        _keep_going=False,
+        _verbose=True,
+        _log=sys.stdout
+    ):
+        raise NotImplementedError()
+
+    def erasePathFromDFS(
         self,
         _path,
-        _keep_going=False
+        _keep_going=False,
+        _verbose=True
     ):
         raise NotImplementedError()
 
@@ -40,16 +51,6 @@ class DistributedFileSistem:
         self,
         _local_path,
         _dfs_path,
-        _keep_going=False,
-        _verbose=True,
-        _log=sys.stdout
-    ):
-        raise NotImplementedError()
-
-    def downloadDataFromDFS(
-        self,
-        _dfs_path,
-        _local_path,
         _keep_going=False,
         _verbose=True,
         _log=sys.stdout

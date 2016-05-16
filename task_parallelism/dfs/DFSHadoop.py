@@ -27,7 +27,7 @@ class DFSHadoopFactory(DistributedFileSistemFactory):
 
         self.hadoop_home = os.getenv("HADOOP_HOME")
 
-        ###
+        ####
         # Define initial vars
         self.hadoop_user_base_path = os.path.join("/user", self.user)
         self.hadoop_cmd = os.path.join(self.hadoop_home, "bin", "hadoop")
@@ -61,27 +61,6 @@ class DFSHadoop(DistributedFileSistem):
         runCommand("mkdir -p " + hadoop_log_dir)
         os.environ["HADOOP_LOG_DIR"] = hadoop_log_dir
 
-    def cleanupDFS(
-        self,
-        _path,
-        _keep_going=False
-    ):
-        result = runCommand(
-            self.hadoop_cmd + " fs" +
-            " -rm -r -f " + _path,
-            _verbose=True)
-
-        if result["code"] != 0:
-            if not _keep_going:
-                raise Exception("\n" + toString(result))
-
-        return result
-
-    def getBasePath(
-        self
-    ):
-        return self.hadoop_user_base_path
-
     def downloadDataFromDFS(
         self,
         _dfs_path,
@@ -100,6 +79,28 @@ class DFSHadoop(DistributedFileSistem):
                 raise Exception("\n" + toString(result))
 
         return result
+
+    def erasePathFromDFS(
+        self,
+        _path,
+        _keep_going=False,
+        _verbose=True
+    ):
+        result = runCommand(
+            self.hadoop_cmd + " fs" +
+            " -rm -r -f " + _path,
+            _verbose=_verbose)
+
+        if result["code"] != 0:
+            if not _keep_going:
+                raise Exception("\n" + toString(result))
+
+        return result
+
+    def getBasePath(
+        self
+    ):
+        return self.hadoop_user_base_path
 
     def mkdirToDFS(
         self,

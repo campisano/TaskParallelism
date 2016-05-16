@@ -4,6 +4,7 @@
 
 import os
 from utils.os_utils import getCleanPathName
+from utils.os_utils import runCommand
 
 
 class WorkflowManager:
@@ -56,7 +57,7 @@ class WorkflowManager:
 
         ####
         # Cleanup data folder
-        dfs.cleanupDFS(base_dfs_path)
+        dfs.erasePathFromDFS(base_dfs_path)
 
         ####
         # Upload data to distributed file system
@@ -80,3 +81,7 @@ class WorkflowManager:
         ####
         # Download data from distributed file system
         dfs.downloadDataFromDFS(output_dfs_path, _output_path)
+
+        ####
+        # print output content
+        runCommand("ls " + _output_path, _verbose=True)
