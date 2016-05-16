@@ -18,7 +18,7 @@ class DFSHadoopFactory(DistributedFileSistemFactory):
         ####
         # Defining environment
         if not os.getenv("USER"):
-            raise Exception("Can not find env variable 'HADOOP_HOME'.")
+            raise Exception("Can not find env variable 'USER'.")
 
         self.user = os.getenv("USER")
 
