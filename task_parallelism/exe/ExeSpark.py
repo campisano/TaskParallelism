@@ -180,7 +180,8 @@ class ExeSparc(Executor):
         self,
         _dfsFactory,
         _experiment_name,
-        _tasks_csv_dfs_path,
+        _tasks_csv_path,
+        _base_dfs_path,
         _binaries_dfs_path,
         _input_dfs_path,
         _output_dfs_path
@@ -190,6 +191,15 @@ class ExeSparc(Executor):
         self.input_dfs_path = _input_dfs_path
         self.output_dfs_path = _output_dfs_path
 
+        ####
+        # Upload CSV data to distributed file system
+        tasks_csv_dfs_path = os.path.join(
+            _base_dfs_path, os.path.basename(_tasks_csv_path))
+        dfs = _dfsFactory.create()
+        dfs.uploadDataToDFS(_tasks_csv_path, tasks_csv_dfs_path)
+
+        ####
+        # Create spark context
         sc = SparkContext(
             conf=SparkConf().setAppName(
                 _experiment_name).set(
@@ -198,7 +208,7 @@ class ExeSparc(Executor):
         )
 
         # Get all rows
-        csv_rows_RDD = sc.textFile(_tasks_csv_dfs_path)
+        csv_rows_RDD = sc.textFile(tasks_csv_dfs_path)
 
         # Get all results
         results_RDD = csv_rows_RDD.map(self.mapRunEachTask)
@@ -216,4 +226,6 @@ class ExeSparc(Executor):
                     path.encode('ascii', 'ignore'),
                     output.encode('ascii', 'ignore')))
 
+        ####
+        # finalize spark context
         sc.stop()

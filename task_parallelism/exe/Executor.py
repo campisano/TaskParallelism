@@ -17,7 +17,8 @@ class Executor:
         self,
         _dfsFactory,
         _experiment_name,
-        _tasks_csv_dfs_path,
+        _tasks_csv_path,
+        _base_dfs_path,
         _binaries_dfs_path,
         _input_dfs_path,
         _output_dfs_path

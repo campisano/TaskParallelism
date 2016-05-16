@@ -3,6 +3,7 @@
 #
 
 import os
+import StringIO
 import sys
 from ..utils.os_utils import runCommand
 from ..utils.string_utils import toString
@@ -129,11 +130,13 @@ class DFSHadoop(DistributedFileSistem):
         _verbose=True,
         _log=sys.stdout
     ):
-        result = self.mkdirToDFS(os.path.dirname(_dfs_path))
+        log = StringIO.StringIO()
+        result = self.mkdirToDFS(
+            os.path.dirname(_dfs_path), _verbose=True, _log=log)
 
         if result["code"] != 0:
             if not _keep_going:
-                raise Exception("\n" + toString(result))
+                raise Exception(log + "\n" + toString(result))
 
         result = runCommand(
             self.hadoop_cmd + " fs" +

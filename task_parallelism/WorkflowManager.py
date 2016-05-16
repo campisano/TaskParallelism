@@ -46,8 +46,6 @@ class WorkflowManager:
         base_dfs_path = os.path.join(
             dfs.getBasePath(), getCleanPathName(_experiment_name))
 
-        tasks_csv_dfs_path = os.path.join(
-            base_dfs_path, os.path.basename(_tasks_csv_path))
         binaries_dfs_path = os.path.join(
             base_dfs_path, os.path.basename(_binaries_path))
         input_dfs_path = os.path.join(
@@ -61,7 +59,6 @@ class WorkflowManager:
 
         ####
         # Upload data to distributed file system
-        dfs.uploadDataToDFS(_tasks_csv_path, tasks_csv_dfs_path)
         dfs.uploadDataToDFS(_binaries_path, binaries_dfs_path)
         dfs.uploadDataToDFS(_input_path, input_dfs_path)
 
@@ -72,7 +69,8 @@ class WorkflowManager:
         exe.runAllTasks(
             _dfsFactory=_dfsFactory,
             _experiment_name=_experiment_name,
-            _tasks_csv_dfs_path=tasks_csv_dfs_path,
+            _tasks_csv_path=_tasks_csv_path,
+            _base_dfs_path=base_dfs_path,
             _binaries_dfs_path=binaries_dfs_path,
             _input_dfs_path=input_dfs_path,
             _output_dfs_path=output_dfs_path
@@ -84,4 +82,4 @@ class WorkflowManager:
 
         ####
         # print output content
-        runCommand("ls " + _output_path, _verbose=True)
+        runCommand("ls -R " + _output_path, _verbose=True)
