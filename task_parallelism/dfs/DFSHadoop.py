@@ -17,27 +17,40 @@ class DFSHadoopFactory(DistributedFileSistemFactory):
     ):
         ####
         # Defining environment
+        if not os.getenv("USER"):
+            raise Exception("Can not find env variable 'HADOOP_HOME'.")
+
+        self.user = os.getenv("USER")
+
         if not os.getenv("HADOOP_HOME"):
             raise Exception("Can not find env variable 'HADOOP_HOME'.")
 
-        self.hadoop_cmd = os.path.join(
-            os.getenv("HADOOP_HOME"), "bin", "hadoop")
+        self.hadoop_home = os.getenv("HADOOP_HOME")
 
+        ###
+        # Define initial vars
+        self.hadoop_user_base_path = os.path.join("/user", self.user)
+        self.hadoop_cmd = os.path.join(self.hadoop_home, "bin", "hadoop")
         self.hadoop_blocksize = 4194304     # 4MB
 
     def create(
         self
     ):
-        return DFSHadoop(self.hadoop_cmd, self.hadoop_blocksize)
+        return DFSHadoop(
+            self.hadoop_user_base_path,
+            self.hadoop_cmd,
+            self.hadoop_blocksize)
 
 
 class DFSHadoop(DistributedFileSistem):
 
     def __init__(
         self,
+        _hadoop_user_base_path,
         _hadoop_cmd,
         _hadoop_blocksize
     ):
+        self.hadoop_user_base_path = _hadoop_user_base_path
         self.hadoop_cmd = _hadoop_cmd
         self.hadoop_blocksize = _hadoop_blocksize
 
@@ -63,6 +76,11 @@ class DFSHadoop(DistributedFileSistem):
                 raise Exception("\n" + toString(result))
 
         return result
+
+    def getBasePath(
+        self
+    ):
+        return self.hadoop_user_base_path
 
     def downloadDataFromDFS(
         self,

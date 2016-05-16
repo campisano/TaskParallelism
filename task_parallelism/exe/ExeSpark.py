@@ -36,6 +36,7 @@ class ExeSparc(Executor):
         command = cols[1].split(" ")
         inputs = cols[2].split(" ")
         outputs = cols[3].split(" ")
+
         local_path = getCleanPathName(task_id)
         env_path = "./bin:" + os.environ["PATH"]
 
@@ -44,6 +45,7 @@ class ExeSparc(Executor):
         result = runCommand(
             "rm -rf " + local_path,
             _verbose=True)
+
         result = runCommand(
             "mkdir -p " + local_path,
             _verbose=True)

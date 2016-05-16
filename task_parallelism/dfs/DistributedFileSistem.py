@@ -22,6 +22,11 @@ class DistributedFileSistem:
     ):
         raise NotImplementedError()
 
+    def getBasePath(
+        self
+    ):
+        raise NotImplementedError()
+
     def mkdirToDFS(
         self,
         _dfs_path,

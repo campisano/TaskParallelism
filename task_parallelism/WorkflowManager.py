@@ -40,8 +40,10 @@ class WorkflowManager:
                 "'output_path': '%s' must not exist."
                 % _output_path)
 
+        dfs = _dfsFactory.create()
+
         base_dfs_path = os.path.join(
-            os.sep, getCleanPathName(_experiment_name))
+            dfs.getBasePath(), getCleanPathName(_experiment_name))
 
         tasks_csv_dfs_path = os.path.join(
             base_dfs_path, os.path.basename(_tasks_csv_path))
@@ -51,8 +53,6 @@ class WorkflowManager:
             base_dfs_path, os.path.basename(_input_path))
         output_dfs_path = os.path.join(
             base_dfs_path, os.path.basename(_output_path))
-
-        dfs = _dfsFactory.create()
 
         ####
         # Cleanup data folder
