@@ -200,10 +200,10 @@ class ExeSparc(Executor):
         # Get all rows
         csv_rows_RDD = sc.textFile(_tasks_csv_dfs_path)
 
-        # Get all words
+        # Get all results
         results_RDD = csv_rows_RDD.map(self.mapRunEachTask)
 
-        # Group all results by key and sum their occurrencies
+        # Group all results by key and reduce their occurrencies
         reduced_results_RDD = results_RDD.reduceByKey(self.reduceTaskResults)
 
         # Collect the ouput

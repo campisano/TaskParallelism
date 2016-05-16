@@ -4,15 +4,24 @@
 
 import argparse
 from task_parallelism.WorkflowManager import WorkflowManager
-from task_parallelism.dfs.DFSHadoop import DFSHadoopFactory
-from task_parallelism.exe.ExeSpark import ExeSparcFactory
 
+
+def getInstance(
+    _module_class_name
+):
+    module_name, class_name = _module_class_name.rsplit(".", 1)
+    my_module = __import__(module_name, fromlist=[class_name])
+    my_class = getattr(my_module, class_name)
+    instance = my_class()
+
+    return instance
 
 if __name__ == "__main__":
 
     ####
     # Defining program arguments
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "experiment_name", type=str, help=(
             "Name of the current run experiment."))
@@ -31,6 +40,13 @@ if __name__ == "__main__":
         "output_path", type=str, help=(
             "Output path to use to deploy"
             " the data produced by all the completed tasks."))
+    parser.add_argument(
+        "dfs_factory_name", type=str, help=(
+            "Name of the Distributed FileSystem factory to use."))
+    parser.add_argument(
+        "exe_factory_name", type=str, help=(
+            "Name of the Cluster executor factory to use."))
+
     args = parser.parse_args()
 
     ####
@@ -41,6 +57,6 @@ if __name__ == "__main__":
         _binaries_path=args.binaries_path,
         _input_path=args.input_path,
         _output_path=args.output_path,
-        _dfsFactory=DFSHadoopFactory(),
-        _exeFactory=ExeSparcFactory()
+        _dfsFactory=getInstance(args.dfs_factory_name),
+        _exeFactory=getInstance(args.exe_factory_name)
     )
