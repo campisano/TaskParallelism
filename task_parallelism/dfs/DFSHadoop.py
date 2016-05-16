@@ -84,12 +84,13 @@ class DFSHadoop(DistributedFileSistem):
         self,
         _path,
         _keep_going=False,
-        _verbose=True
+        _verbose=True,
+        _log=sys.stdout
     ):
         result = runCommand(
             self.hadoop_cmd + " fs" +
             " -rm -r -f " + _path,
-            _verbose=_verbose)
+            _verbose=_verbose, _log=_log)
 
         if result["code"] != 0:
             if not _keep_going:

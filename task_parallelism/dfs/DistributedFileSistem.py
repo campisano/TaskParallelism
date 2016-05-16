@@ -29,7 +29,8 @@ class DistributedFileSistem:
         self,
         _path,
         _keep_going=False,
-        _verbose=True
+        _verbose=True,
+        _log=sys.stdout
     ):
         raise NotImplementedError()
 
