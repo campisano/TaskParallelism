@@ -6,60 +6,21 @@ import datetime
 import os
 import socket
 from ..utils.os_utils import getCleanPathName
-from ..utils.os_utils import getInstance
 from ..utils.os_utils import runCommand
 from ..utils.string_utils import toString
 from Executor import Executor
 from Executor import ExecutorFactory
 
 
-class ExeFermiGridFactory(ExecutorFactory):
+class ExeHTCondorFactory(ExecutorFactory):
 
     def create(
         self
     ):
-        return ExeFermiGrid()
+        return ExeHTCondor()
 
 
-class ExeFermiGrid(Executor):
-
-    def mapRunEachTask(
-        self,
-        _csv_row
-    ):
-        dfs = self.dfs_factory.create()
-
-        dfs.uploadDataToDFS(
-            "task_parallelism.zip", self.base_dfs_path,
-            _keep_going=True)
-
-        run_single_task_filename = "run_single_task.sh"
-        run_single_task_file = open(run_single_task_filename, "w")
-        run_single_task_file.write(
-            "#!/bin/bash" + "\n" +
-            "\n" +
-            "unzip task_parallelism.zip" + "\n" +
-            "\n" +
-            "python -c \"from task_parallelism.exe.ExeFermiGrid" +
-            " import ExeFermiGrid; ExeFermiGrid().runTask('" +
-            _csv_row.strip() + "', '" +
-            self.binaries_dfs_path + "', '" +
-            self.input_dfs_path + "', '" +
-            self.output_dfs_path + "', '" +
-            str(self.dfs_factory.__class__) +
-            "')\""
-        )
-        run_single_task_file.close()
-
-        # submit with the -f option
-        # from
-        # https://cdcvs.fnal.gov/redmine/projects/jobsub/wiki/Jobsub_submit
-
-    def reduceTaskResults(
-        self,
-        _jobs,
-    ):
-        pass
+class ExeHTCondor(Executor):
 
     def runAllTasks(
         self,
@@ -71,31 +32,108 @@ class ExeFermiGrid(Executor):
         _input_dfs_path,
         _output_dfs_path
     ):
-        self.dfs_factory = _dfs_factory
-        self.base_dfs_path = _base_dfs_path
-        self.binaries_dfs_path = _binaries_dfs_path
-        self.input_dfs_path = _input_dfs_path
-        self.output_dfs_path = _output_dfs_path
+        tasks_path = "condor"
+
+        tasks = list()
 
         # Get all rows
         csv_rows = open(_tasks_csv_path, "r").readlines()
 
-        jobs = list()
+        for csv_row in csv_rows:
+            csv_row = csv_row.strip()
+            cols = csv_row.split(",")
+            task_id = cols[0]
+            task_path = tasks_path + "/" + task_id
 
-        # Get all results
+            runCommand(
+                "mkdir -p " + task_path,
+                _verbose=True
+            )
 
-        for row in csv_rows:
-            jobs.append(self.mapRunEachTask(row))
+            condor_submit = task_path + "/condor.submit"
+            condor_script = task_path + "/script.py"
+            condor_output = task_path + "/results.output"
+            condor_error = task_path + "/results.error"
+            condor_log = task_path + "/results.log"
 
-        # Group all results by key and reduce their occurrencies
-        # outputs = self.reduceTaskResults(jobs)
+            # prepare condor.submit file
+            open(condor_submit, "w").write(
+                "should_transfer_files = YES" + "\n" +
+                "when_to_transfer_output = ON_EXIT" + "\n" +
+                "transfer_input_files = task_parallelism" + "\n" +
+                "###transfer_output_files = out_file_1" + "\n" +
+                "\n" +
+                "executable = " + condor_script + "\n" +
+                "output = " + condor_output + "\n" +
+                "error = " + condor_error + "\n" +
+                "log = " + condor_log + "\n" +
+                "queue" + "\n"
+            )
 
-        # Print the output
-        # for (path, output) in outputs:
-        #     print(
-        #         "%s:\n%s\n" % (
-        #             path.encode('ascii', 'ignore'),
-        #             output.encode('ascii', 'ignore')))
+            # prepare condor_script.py file
+            open(condor_script, "w").write(
+                "#!/usr/bin/env python" + "\n" +
+                "# -*- coding: utf-8 -*-" + "\n" +
+                "#" + "\n" +
+                "\n" +
+                "####" + "\n" +
+                "import os" + "\n" +
+                "import sys" + "\n" +
+                "if os.getcwd() not in sys.path:" + "\n" +
+                "    sys.path.insert(0, os.getcwd())" + "\n" +
+                "####" + "\n" +
+                "\n" +
+                "from task_parallelism.utils.os_utils import getInstance" +
+                "\n" +
+                "\n" +
+                "if __name__ == \"__main__\":" + "\n" +
+                "\n" +
+                "    dfs_factory = getInstance(" + "\n" +
+                "        " +
+                (
+                    "\"" + _dfs_factory.__class__.__module__ +
+                    "." +
+                    _dfs_factory.__class__.__name__ + "\""
+                ) +
+                ")" + "\n" +
+                "    exe_factory = getInstance(" + "\n" +
+                "        " +
+                (
+                    "\"task_parallelism.exe.ExeHTCondor.ExeHTCondorFactory\""
+                ) +
+                ")" + "\n" +
+                "\n" +
+                "    exe = exe_factory.create()" + "\n" +
+                "\n" +
+                "    exe.runTask(" + "\n" +
+                "        \"" + csv_row + "\"," + "\n" +
+                "        \"" + _binaries_dfs_path + "\"," + "\n" +
+                "        \"" + _input_dfs_path + "\"," + "\n" +
+                "        \"" + _output_dfs_path + "\"," + "\n" +
+                "        dfs_factory" + "\n" +
+                "    )" + "\n"
+            )
+
+            result = runCommand(
+                "chmod 0755 " + condor_script,
+                _verbose=True
+            )
+
+            if result["code"] == 0:
+                result = runCommand(
+                    "condor_submit " + condor_submit,
+                    _verbose=True
+                )
+
+                if result["code"] == 0:
+                    tasks.append(result["out"])
+
+        # wait for task ends
+        for task in tasks:
+            runCommand(
+                "condor_wait " + condor_log,
+                _verbose=True
+            )
 
     def runTask(
         self,
@@ -103,10 +141,9 @@ class ExeFermiGrid(Executor):
         _binaries_dfs_path,
         _input_dfs_path,
         _output_dfs_path,
-        _dfs_factory_module_class_name
+        _dfs_factory
     ):
-        dfs_factory = getInstance(_dfs_factory_module_class_name)
-        dfs = dfs_factory.create()
+        dfs = _dfs_factory.create()
 
         ####
         # Get parameters
@@ -122,7 +159,8 @@ class ExeFermiGrid(Executor):
         ####
         # Prepare local paths
         result = runCommand(
-            "rm -rf " + local_path,
+            ##"rm -rf " + local_path,
+            "ls -l " + local_path,
             _verbose=True)
 
         result = runCommand(

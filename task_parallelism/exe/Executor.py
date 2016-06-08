@@ -13,7 +13,7 @@ class ExecutorFactory:
 
 class Executor:
 
-    def runAllTasks(
+    def runTask(
         self,
         _dfs_factory,
         _experiment_name,
